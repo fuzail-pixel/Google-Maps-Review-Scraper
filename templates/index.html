@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps Review Scraper</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.2);
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4285f4;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #3367d6;
+        }
+        .review {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        .rating {
+            color: #f4b400;
+            margin-bottom: 5px;
+        }
+        .spinner {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .error {
+            color: #ff0000;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Google Maps Review Scraper</h2>
+        <input type="text" id="place" placeholder="Enter a place name or URL" />
+        <button onclick="getReviews()">Get Reviews</button>
+        <div id="loading" class="spinner" style="display: none;">
+            <i class="fas fa-spinner fa-spin fa-2x"></i>
+            <p>Scraping reviews... Please wait.</p>
+        </div>
+        <div id="message"></div>
+        <div id="reviews"></div>
+    </div>
+
+    <script>
+        function getReviews() {
+            const place = document.getElementById("place").value.trim();
+            const loadingSpinner = document.getElementById("loading");
+            const messageBox = document.getElementById("message");
+            const reviewsContainer = document.getElementById("reviews");
+
+            // Clear previous messages
+            messageBox.innerHTML = "";
+            reviewsContainer.innerHTML = "";
+
+            if (place === "") {
+                messageBox.innerHTML = "<div class='error'>Please enter a place name or URL.</div>";
+                return;
+            }
+
+            // Show loading spinner
+            loadingSpinner.style.display = "block";
+
+            fetch("/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ place: place })
+            })
+            .then(response => response.json())
+            .then(reviews => {
+                loadingSpinner.style.display = "none";
+
+                if (reviews.length > 0) {
+                    messageBox.innerHTML = "<div class='success'>Reviews fetched successfully!</div>";
+                    reviewsContainer.innerHTML = reviews.map(review => `
+                        <div class="review">
+                            <strong>${review.author}</strong>
+                            <div class="rating">${review.rating}</div>
+                            <p>${review.review}</p>
+                        </div>
+                    `).join("");
+                } else {
+                    messageBox.innerHTML = "<div class='error'>No reviews found for the provided input.</div>";
+                }
+            })
+            .catch(error => {
+                loadingSpinner.style.display = "none";
+                console.error("Error fetching reviews:", error);
+                messageBox.innerHTML = "<div class='error'>An error occurred while scraping reviews. Please try again later.</div>";
+            });
+        }
+    </script>
+</body>
+</html>

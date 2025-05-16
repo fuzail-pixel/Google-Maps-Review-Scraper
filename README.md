@@ -27,7 +27,6 @@ This project allows users to extract reviews from Google Maps for any business o
 Make sure you have the following installed:
 
 * Python 3.9+
-* Node.js (for Playwright installation)
 * Google Chrome or Chromium browser
 
 ### Installation
